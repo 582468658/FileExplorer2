@@ -1,0 +1,219 @@
+//BreadCrumb start
+function InitBreadCrumb()
+{
+  window.stackBreadCrumb = new Array();
+  var obj = new Object();
+  obj.name = getCookie_faker("userId")+"用户空间";
+  obj.level = -1;
+  obj.breadCrumb = "userPad";
+  window.stackBreadCrumb.push(obj);
+}
+
+function SetBreadCrumb(file)
+{
+  InitBreadCrumb();
+
+  if(file == null || file.hasOwnProperty('breadCrumb') && file.breadCrumb == "userPad")
+  {
+      return;
+  }
+
+  if(file.hasOwnProperty('breadCrumb') && file.breadCrumb == "findPad")
+  {
+      window.stackBreadCrumb.push(file);
+      return;
+  }
+
+  var arrayTemp = new Array();
+  while(file != null)
+  {
+      arrayTemp.push(file);
+      if(file.parentId == null || file.parentId != "")
+      {
+          break;
+      }
+      file = GetFile(file.parentId);
+  }
+  window.stackBreadCrumb = window.stackBreadCrumb.concat(arrayTemp.reverse());
+  return;
+}
+
+function ShowBreadCrumb()
+{
+    var html = "";
+    for(var i=0;i<window.stackBreadCrumb.length;i++)
+    {
+      if(window.stackBreadCrumb[i].hasOwnProperty('breadCrumb') && window.stackBreadCrumb[i].breadCrumb == "userPad")
+      {
+        html += "<li class='userPad'><a onclick='GotoBreadCrumb("+window.stackBreadCrumb[i].id+")' style=':hover{text-decoration:underline;}'>"+window.stackBreadCrumb[i].name+"</a></li>";
+        continue;
+      }
+      if(window.stackBreadCrumb[i].hasOwnProperty('breadCrumb') && window.stackBreadCrumb[i].breadCrumb == "findPad"){
+        html += "<li class='findPad'><a style=':hover{text-decoration:underline;}'>"+window.stackBreadCrumb[i].name+"</a></li>";
+        continue;
+      }
+      html += "<li class='normal'><a onclick='GotoBreadCrumb("+window.stackBreadCrumb[i].id+")' style=':hover{text-decoration:underline;}'>"+window.stackBreadCrumb[i].name+"</a></li>";
+    }
+    $("#breadCrumb").html(html);
+}
+
+function GotoBreadCrumb(id)
+{
+
+    GotoFile(GetFile(id));
+}
+//BreadCrumb end
+
+//FindFileTable start
+function findFile(key)
+{
+  var arrayFindFile = new Array();
+  for(var i=0;i<window.files.length;i++)
+  {
+    if(isHitKey(key, window.files[i]))
+    {
+      arrayFindFile.push(window.files[i]);
+    }
+  }
+  return arrayFindFile;
+}
+
+function isHitKey(key, file)
+{
+  if(file.name.indexOf(key) != -1)
+  {
+    return true;
+  }
+  return false;
+}
+
+function ShowFile()
+{
+     var table = layui.table;
+    table.render({
+    elem: '#table'
+    ,even:true
+    ,height: 'full-115'
+    ,data: visibleFiles
+    ,page: true //开启分页
+    ,cols: [[ //表头
+      {field: 'name', title: '名称', sort: true, templet: function (data) {return ShowIcon(data);}}
+      ,{field: 'modifyTime', title:'修改日期', width:200, sort: true}
+      ,{field: 'type', title:'类型', width:120, sort: true}
+      ,{field: 'size', title:'大小', width:120, align:'right', sort: true}
+      ,{field: 'right', title:'操作',width:120, align:'center', toolbar: '#bar'}
+    ]]
+  });
+}
+
+function ShowFindFile()
+{
+  var table = layui.table;
+  table.render({
+    elem: '#table'
+    ,even:true
+    ,height: 312
+    ,data: window.visibleFiles
+    ,page: true //开启分页
+    ,cols: [[ //表头
+      {field: 'name', title: '名称', sort: true, templet: function (data) {return ShowIcon(data);}}
+      ,{field: 'modifyTime', title:'修改日期', width:200, sort: true}
+      ,{field: 'type', title:'类型', width:120, sort: true}
+      ,{field: 'size', title:'大小', width:120, align:'right', sort: true}
+      ,{field: 'right', title:'操作',width:220, align:'center', toolbar: '#findFileBar'}
+    ]]
+  });
+}
+//FindFileTable end
+
+//FileTable start
+function InitFile()
+{
+	BE_InitFiles_fake();
+	SortFiles();
+}
+
+function SetVisiableFile(file)
+{
+    window.visibleFiles = new Array();
+
+    if(file == null || file.hasOwnProperty("breadCrumb") && file.breadCrumb == "userPad")
+    {
+        window.visibleFiles = GetRoot();
+        return;
+    }
+
+    if(file.hasOwnProperty("breadCrumb") && file.breadCrumb == "findPad")
+    {
+        var key = file.name.substring(5);
+        window.visibleFiles = findFile(key);
+        return;
+    }
+
+    window.visibleFiles = GetLeafFile(file);
+    return;
+}
+
+function ShowVisiableFile(file)
+{
+    if(file.hasOwnProperty("breadCrumb") && file.breadCrumb == "findPad")
+    {
+        ShowFindFile();
+        return;
+    }
+    ShowFile();
+}
+
+function GetRoot()
+{
+  var arrayRoot = new Array();
+  for(var i=0;i<window.files.length;i++)
+  {
+    if(window.files[i].parentId === "")
+    {
+      arrayRoot.push(window.files[i]);
+    }
+  }
+  return arrayRoot;
+}
+
+function GetLeafFile(file)
+{
+  //确定是否为文件夹
+  if(file.type != 'folder')
+  {
+    return;
+  }
+  var arrayLeafFile = new Array();
+  for(var i=0;i<window.files.length;i++)
+  {
+    if(window.files[i].parentId === file.id)
+    {
+      arrayLeafFile.push(window.files[i]);
+      console.log(window.files[i]);
+    }
+  }
+  return arrayLeafFile;
+}
+
+function GetFile(id)
+{
+    if(id == null)
+    {
+        var file = new Object();
+        file.name = getCookie("userId");
+        file.id = "";
+        file.level = -1;
+        file.breadCrumb = "userPad";
+        return file;
+    }
+    for(var i=0;i<window.files.length;i++)
+    {
+        if(window.files[i].id === id)
+        {
+          return window.files[i];
+        }
+    }
+    return;
+}
+//FileTable end

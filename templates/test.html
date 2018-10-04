@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layui</title>
+  <link rel="stylesheet" href="../static/layui/css/layui.css">
+  <script src ="../static/jquery-3.3.1.js"></script>
+  <script type="text/javascript" src="../static/layui/layui.js"></script>
+</head>
+<body>
+ <div class="layui-fluid">
+      <form class="layui-form" action="">
+    <div class="layui-form-item proSelect">
+         <label class="layui-form-label">文章分类</label>
+          <div class="layui-input-block editWidth">
+              <select name="categoryList" lay-verify="required" id="zcySelect">
+                  <option value=""></option>
+                  <option value="0">备忘录</option>
+              </select>
+          </div>
+     </div>
+     <a class="layui-btn layui-btn-small" id="" onclick="addcategoryClassify()">添加文章分类</a>
+</form>
+<!--弹窗内容-->
+<div id="select_prod" class="layui-form" hidden="hidden">
+    <div class="layui-input-inline" style="width:200px;margin-left:3%;margin-top:5%">
+        <input type="text" name="text" required lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+    </div>
+</div>
+</div>
+ <script>
+     layui.use('form', function(){
+        var form = layui.form;
+        form.render();
+   });
+     function renderForm(){
+  layui.use('form', function(){
+   var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+   form.render();
+  });
+ }
+function addcategoryClassify(){
+    layer.open({
+        type:1,
+        btn:['确定','取消'],
+        content:$("#select_prod"),
+        title:"添加文章分类",
+        area:['270px','160px'],
+        //当前层索引参数（index）、当前层的DOM对象（layero）
+        yes:function(index,layero){
+            //获取input输入的值
+            var ivalue=$(layero).find("input").val();
+            console.log(ivalue);
+            //获取要添加的option的索引
+            var sIndex=$("#zcySelect")[0].options.length-1;
+            console.log(sIndex);
+            if(ivalue==null||ivalue==''){
+                layer.msg("请输入产品类别")
+            }
+            else{
+                layer.msg("输入的产品类别是："+ivalue);
+                //为select添加option
+                $("#zcySelect").append("<option value="+sIndex+">"+ivalue+"</option>");
+                console.log("重新渲染表格")
+                renderForm();//表单重新渲染，要不然添加完显示不出来新的option
+                layer.close(index);
+            }
+            $(layero).find("input").val('');
+        }
+    })
+}
+</script>
+</body>
+</html>
