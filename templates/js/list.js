@@ -1,9 +1,10 @@
+document.write("<script type='text/javascript' src'./stub.js'></script>");
 //BreadCrumb start
 function InitBreadCrumb()
 {
   window.stackBreadCrumb = new Array();
   var obj = new Object();
-  obj.name = getCookie_faker("userId")+"用户空间";
+  obj.name = getCookie_faker("userId");
   obj.level = -1;
   obj.breadCrumb = "userPad";
   window.stackBreadCrumb.push(obj);
@@ -28,7 +29,7 @@ function SetBreadCrumb(file)
   while(file != null)
   {
       arrayTemp.push(file);
-      if(file.parentId == null || file.parentId != "")
+      if(file.parentId == null || file.parentId == "")
       {
           break;
       }
@@ -65,6 +66,44 @@ function GotoBreadCrumb(id)
 //BreadCrumb end
 
 //FindFileTable start
+function getFilePath(file)
+{
+  var arrayTemp = new Array();
+  while(file != null)
+  {
+    file = GetFile(file.parentId);
+    arrayTemp.push(file);
+    if(file.parentId == null || file.parentId == "")
+    {
+        break;
+    }
+  }
+  var userPad = new Object();
+	userPad.name = getCookie_faker("userId");
+	userPad.id = "";
+	userPad.level = -1;
+	userPad.breadCrumb = "userPad";
+  arrayTemp.push(userPad);
+  arrayTemp.reverse();
+
+  var path = "";
+  for(var i=0;i<arrayTemp.length;i++)
+  {
+    path += arrayTemp[i].name;
+    if(i==0)
+    {
+      path += ':';
+      continue;
+    }
+    if(i==arrayTemp.length -1)
+    {
+      continue;
+    }
+    path += '/';
+  }
+  return path;
+}
+
 function findFile(key)
 {
   var arrayFindFile = new Array();
@@ -72,7 +111,9 @@ function findFile(key)
   {
     if(isHitKey(key, window.files[i]))
     {
-      arrayFindFile.push(window.files[i]);
+      var file = window.files[i];
+      file.name += "    "+getFilePath(file);
+      arrayFindFile.push(file);
     }
   }
   return arrayFindFile;
@@ -143,9 +184,9 @@ function SetVisiableFile(file)
         return;
     }
 
-    if(file.hasOwnProperty("breadCrumb") && file.breadCrumb == "findPad")
+    if(file == null || file.hasOwnProperty("breadCrumb") && file.breadCrumb == "findPad")
     {
-        var key = file.name.substring(5);
+        var key = file.name.substring(1,file.name.lastIndexOf('"'));
         window.visibleFiles = findFile(key);
         return;
     }
