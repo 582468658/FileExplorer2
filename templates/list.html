@@ -14,7 +14,7 @@
   https://fly.layui.com/jie/19051/
   https://blog.csdn.net/CharmingDang/article/details/82224598 -->
   <!-- 网页版引用 -->
-    <script src="//at.alicdn.com/t/font_861119_8fh8138ux8o.js"></script>
+    <!-- <script src="//at.alicdn.com/t/font_861119_8fh8138ux8o.js"></script> -->
   <!-- fontclass方式引用 -->
   <!-- <link rel="stylesheet" href="../static/layui/css/modules/layui-icon-extend/iconfont.css"> -->
   <!-- symbol方式引用 start-->
@@ -219,6 +219,7 @@ $("#createFolder").click(function()
 $("#find").click(function()
 {
   var key = document.getElementById("keyWord").value;
+  document.getElementById("keyWord").value = "";
   var file = new Object();
   //sf start
   file.name = '"'+key+'"中的搜索结果';

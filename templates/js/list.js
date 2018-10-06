@@ -69,14 +69,14 @@ function GotoBreadCrumb(id)
 function getFilePath(file)
 {
   var arrayTemp = new Array();
-  while(file != null)
+  while(file.parentId != null && file.parentId != "")
   {
     file = GetFile(file.parentId);
-    arrayTemp.push(file);
-    if(file.parentId == null || file.parentId == "")
+    if(file == null)
     {
         break;
     }
+    arrayTemp.push(file);
   }
   var userPad = new Object();
 	userPad.name = getCookie_faker("userId");
@@ -112,7 +112,7 @@ function findFile(key)
     if(isHitKey(key, window.files[i]))
     {
       var file = window.files[i];
-      file.name += "    "+getFilePath(file);
+      file.path = getFilePath(file);
       arrayFindFile.push(file);
     }
   }
@@ -157,7 +157,8 @@ function ShowFindFile()
     ,data: window.visibleFiles
     ,page: true //开启分页
     ,cols: [[ //表头
-      {field: 'name', title: '名称', sort: true, templet: function (data) {return ShowIcon(data);}}
+      {field: 'name', title: '名称', width:120, sort: true, templet: function (data) {return ShowIcon(data);}}
+      ,{field: 'path', title:'路径', sort: true}
       ,{field: 'modifyTime', title:'修改日期', width:200, sort: true}
       ,{field: 'type', title:'类型', width:120, sort: true}
       ,{field: 'size', title:'大小', width:120, align:'right', sort: true}
