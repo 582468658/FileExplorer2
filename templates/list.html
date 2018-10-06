@@ -14,7 +14,7 @@
   https://fly.layui.com/jie/19051/
   https://blog.csdn.net/CharmingDang/article/details/82224598 -->
   <!-- 网页版引用 -->
-    <script src="//at.alicdn.com/t/font_861119_8fh8138ux8o.js"></script>
+    <!-- <script src="//at.alicdn.com/t/font_861119_8fh8138ux8o.js"></script> -->
   <!-- fontclass方式引用 -->
   <!-- <link rel="stylesheet" href="../static/layui/css/modules/layui-icon-extend/iconfont.css"> -->
   <!-- symbol方式引用 start-->
@@ -67,7 +67,7 @@
 <body onload="Init()" style="padding: 15px">
 <ol id="breadCrumb" class="breadcrumb"></ol>
 <button id="createFolder" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">新建文件夹</button>
-<button id="updateFile" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">上传文件</button>
+<button id="upload" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">上传文件</button>
 <div class="layui-inline" style="float:right">
   <div class="layui-input-inline">
     <input type="text" id="keyWord" placeholder="" autocomplete="off" class="layui-input">
@@ -81,10 +81,12 @@ var visibleFiles = new Array();
 var stackBreadCrumb = new Array();
 
 
-layui.use(['table','element'], function(){
+layui.use(['table','element','upload'], function(){
   var table = layui.table,
-  element = layui.element;
-    //监听行单击事件（双击事件为：rowDouble）
+  element = layui.element,
+  upload = layui.upload;
+
+  //监听行单击事件（双击事件为：rowDouble）
   table.on('rowDouble(table)', function(obj){
     var file = obj.data;
     //标注选中样式
@@ -96,6 +98,60 @@ layui.use(['table','element'], function(){
     }
     GotoFile(file);
   });
+
+  table.on('tool(table)', function(obj){
+    var data = obj.data;
+    if(obj.event === 'openPath'){
+      var parentFile = GetFile(data.parentId);
+      GotoFile(parentFile);
+      return;
+    }
+    if(obj.event === 'del'){
+      //判断是否有子节点
+      var arrayLeafFile = GetLeafFile(data);
+      if(arrayLeafFile != null)
+      {
+        layer.alert("文件夹中还有文件，禁止删除！");
+        return;
+      }
+      //进行删除确认
+      layer.confirm('真的删除行么', function(index){
+        layer.close(index);
+        layer.alert("已经发送后端进行删除");
+        obj.del();
+      });
+      return;
+    }
+    if(obj.event === 'downLoad'){
+      if(data.type == "folder")
+      {
+        layer.alert("文件夹禁止下载！");
+        return;
+      }
+      layer.alert("已经请求后端进行下载");
+      return;
+    }
+  });
+
+  upload.render({
+    elem: '#upload'
+    ,url: ''//上传接口
+    ,accept: 'file'
+    ,before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+      layer.load(); //上传loading
+    }
+    ,done: function(res, index, upload){
+      layer.closeAll('loading'); //关闭loading
+    }
+    ,error: function(index, upload){
+      layer.closeAll('loading'); //关闭loading
+    }
+  });      
+});
+
+$("#openPath").click(function(data)
+{
+
 });
 
 function GotoFile(file)
@@ -125,7 +181,7 @@ function Init()
     Stub();
 	InitFile();
 	var file = new Object();
-	file.name = getCookie("userId");
+	file.name =  getCookie_faker("userId");
 	file.id = "";
 	file.level = -1;
 	file.breadCrumb = "userPad";
@@ -140,7 +196,7 @@ function Stub()
 function BE_InitFile()
 {
   	$.ajax({
-		url:'./initFiles.py',
+		url:'./faker_getTree.json',
 		type:'POST', //GET _POST["name"] yang
 		async:false,    //或false,是否异步
 		data:{
@@ -219,8 +275,11 @@ $("#createFolder").click(function()
 $("#find").click(function()
 {
   var key = document.getElementById("keyWord").value;
+  document.getElementById("keyWord").value = "";
   var file = new Object();
-  file.name = "find:"+key;
+  //sf start
+  file.name = '"'+key+'"中的搜索结果';
+  //sf end
   file.id = "";
   file.breadCrumb = "findPad";
   GotoFile(file);
@@ -276,12 +335,12 @@ function BE_CreateFolder(parentFile)
 
 </script>
 <script type="text/html" id="bar">
-  <a class="layui-btn layui-btn-xs" lay-event="detail">下载</a>
+  <a class="layui-btn layui-btn-xs" lay-event="downLoad">下载</a>
   <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 <script type="text/html" id="findFileBar">
-  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">打开文件位置</a>
-  <a class="layui-btn layui-btn-xs" lay-event="detail">下载</a>
+  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="openPath">打开文件位置</a>
+  <a class="layui-btn layui-btn-xs" lay-event="downLoad">下载</a>
   <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 </body>
