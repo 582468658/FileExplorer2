@@ -67,7 +67,7 @@
 <body onload="Init()" style="padding: 15px">
 <ol id="breadCrumb" class="breadcrumb"></ol>
 <button id="createFolder" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">新建文件夹</button>
-<button id="updateFile" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">上传文件</button>
+<button id="upload" class="layui-btn layui-btn-sm layui-btn-radius" lay-filter="demo1">上传文件</button>
 <div class="layui-inline" style="float:right">
   <div class="layui-input-inline">
     <input type="text" id="keyWord" placeholder="" autocomplete="off" class="layui-input">
@@ -81,9 +81,10 @@ var visibleFiles = new Array();
 var stackBreadCrumb = new Array();
 
 
-layui.use(['table','element'], function(){
+layui.use(['table','element','upload'], function(){
   var table = layui.table,
-  element = layui.element;
+  element = layui.element,
+  upload = layui.upload;
 
   //监听行单击事件（双击事件为：rowDouble）
   table.on('rowDouble(table)', function(obj){
@@ -131,6 +132,21 @@ layui.use(['table','element'], function(){
       return;
     }
   });
+
+  upload.render({
+    elem: '#upload'
+    ,url: ''//上传接口
+    ,accept: 'file'
+    ,before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+      layer.load(); //上传loading
+    }
+    ,done: function(res, index, upload){
+      layer.closeAll('loading'); //关闭loading
+    }
+    ,error: function(index, upload){
+      layer.closeAll('loading'); //关闭loading
+    }
+  });      
 });
 
 $("#openPath").click(function(data)
@@ -180,7 +196,7 @@ function Stub()
 function BE_InitFile()
 {
   	$.ajax({
-		url:'./initFiles.py',
+		url:'./faker_getTree.json',
 		type:'POST', //GET _POST["name"] yang
 		async:false,    //或false,是否异步
 		data:{

@@ -1,4 +1,4 @@
-function BE_InitFiles_fake()
+function BE_InitFile_faker()
 {
 	window.files =
 	[

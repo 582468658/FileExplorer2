@@ -171,7 +171,7 @@ function ShowFindFile()
 //FileTable start
 function InitFile()
 {
-	BE_InitFiles_fake();
+	BE_InitFile_faker();
 	SortFiles();
 }
 
